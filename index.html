@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego de memoria</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+body{
+    background-color: beige;
+}
+.clearfix {
+    clear: both;
+}
+#tablero {
+    position: relative;
+    display: table;
+    /*border: 1px solid red;*/
+    text-align: center;
+    margin: 0 auto;
+    /*overflow: hidden;*/
+    min-width: 750px;
+}
+.cuadrado {
+    width: 128px;
+    height: 128px;
+    margin: 10px;
+    padding: 0px;
+    background-color: burlywood;
+    border-radius: 10px;
+    display: inline-block;
+}
+#tiempo {
+    position: absolute;
+    left:0;
+    font-size: 3rem;
+    width: 100px;
+    /*border: 1px solid red;*/
+    display: block;
+}
+#puntos {
+    position: absolute;
+    right:0;
+    font-size: 3rem;
+    /*border: 1px solid blue;*/
+    display: block;
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+<script>
+var tiempo = 120;
+var encontrados = 0;
+var numCuadrados;
+var intervalTiempo;
+var cuadrado1 = '';
+var cuadrado2 = '';
+var puntos = 0;
+
+$(document).ready(inicio);
+
+function inicio(){
+
+    // Rellena cada cuadrado con un numero aleatorio. En todo el tablero hay parejas de numeros
+    numCuadrados = document.getElementsByClassName('cuadrado').length;
+    var contador;
+    for ( contador = 0 ; contador < (numCuadrados/2) ; contador++ ) {
+        do {
+            indiceAleatorio = aleatorioEntre ( 0, numCuadrados-1 );
+        } while ( document.getElementsByClassName('cuadrado')[indiceAleatorio].hasAttribute('num') )
+        // document.getElementsByClassName('cuadrado')[indiceAleatorio].innerHTML = contador;
+        document.getElementsByClassName('cuadrado')[indiceAleatorio].setAttribute('num',contador);
+
+        do {
+            indiceAleatorio = aleatorioEntre ( 0, numCuadrados-1 );
+        } while ( document.getElementsByClassName('cuadrado')[indiceAleatorio].hasAttribute('num') )
+        // document.getElementsByClassName('cuadrado')[indiceAleatorio].innerHTML = contador;
+        document.getElementsByClassName('cuadrado')[indiceAleatorio].setAttribute('num',contador);
+    }
+
+    // Inicializa puntos
+    muestraPuntos(puntos);
+
+    // Asigna los event listeners onClick a cada cuadrado
+    $('.cuadrado').on('click', onClickCuadrado);
+
+    // Crea el thread para mostrar el tiempo restante cada segundo
+    intervalTiempo = setInterval( muestraTiempo, 1000 );
+}
+
+function onClickCuadrado(){
+    // Si aun no se ha elegido el primer cuadrado
+    if ( cuadrado1=='' ) {
+        cuadrado1 = $(this);
+        $(cuadrado1).off();
+        voltea(cuadrado1);
+    } else {
+    // Cuando ya hay abierto un cuadrado
+        $('.cuadrado').off();
+        cuadrado2 = $(this);
+        voltea(cuadrado2);
+    }
+}
+
+function voltea(elemento){
+    muestraPuntos(++puntos);
+    $(elemento).css('background-image', 'url(' + 'images/gatito' + $(elemento).attr('num') + '.jpg');
+    $(elemento).css('background-position', 'center');
+    $(elemento).css('background-repeat', 'no-repeat');
+    $(elemento).css('background-clip', 'border-box');
+    $(elemento).animate({opacity: 1}, 1000, function(){
+        if ( cuadrado1!='' && cuadrado2!='' ) comprueba();
+    });
+}
+
+function comprueba(){
+
+    if ( $(cuadrado1).attr('num')==$(cuadrado2).attr('num') ) {
+        $(cuadrado1).animate({opacity:0},100);
+        $(cuadrado1).css('visibility','hidden');
+        $(cuadrado2).animate({opacity:0},100);
+        $(cuadrado2).css('visibility','hidden');
+        encontrados++;
+    }
+
+    $('.cuadrado').css('background-image', '');
+    $('.cuadrado').on('click', onClickCuadrado);
+    cuadrado1='';
+    cuadrado2='';
+
+    if ( encontrados == (numCuadrados/2) ){
+        clearInterval(intervalTiempo);
+        alert('Felicidades! Lo lograste\nRecarga la página para volver a jugar');
+    }
+}
+
+
+function aleatorioEntre(x,y){
+    return Math.round( Math.random() * (y-x) ) + x;
+}
+
+
+function muestraPuntos(p) {
+    $('#puntos').text(p + ' puntos');
+}
+
+
+function muestraTiempo() {
+    tiempo--;
+    if (tiempo==0) {
+        clearInterval(intervalTiempo);
+        $('.cuadrado').off();
+        alert('Lo siento, se te acabó el tiempo\nRecarga la página para volver a jugar');
+    }
+
+    var minutos = dimeMinutos(tiempo);
+    $('#tiempo').text( conCeroDelante( minutos ) + ':' + conCeroDelante( tiempo-(minutos*60) )  );
+}
+
+
+function dimeMinutos (numero) {
+    return Math.floor(numero/60);
+}
+
+
+function conCeroDelante(numero) {
+    return (numero<10 && numero>=0) ? '0' + numero : numero;
+}
+
+
+</script>
+
+
+</head>
+<body>
+
+<div id="tablero">
+    <h1>Juego de memoria en jQuery</h1>
+    <h2>Jacinto Tárraga Hernández - 05-Febrero-2017</h2>
+
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+
+    <div class="clearfix"></div>
+
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+
+    <div class="clearfix"></div>
+
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+
+    <div class="clearfix"></div>
+
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+    <div class="cuadrado"></div>
+
+    <div class="clearfix"></div>
+
+    <div id="tiempo"></div>
+    <div id="puntos"></div>
+
+</div>
+
+</body>
+</html>
